@@ -1,8 +1,12 @@
-package com.atguigu.concurrent;
+package com.atguigu.concurrent2;
 
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 /**
@@ -16,13 +20,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 class Ticket{//资源类
 	
-	/*private int number =30;
-	public synchronized void sale() {
-		
-		if (number>0) {
-			System.out.println(Thread.currentThread().getName()+"卖出第："+(number--)+"剩余："+number);
-		}
-	}*/
+
 	
 	private int number =30;
 	Lock  lock = new ReentrantLock();
@@ -42,31 +40,23 @@ class Ticket{//资源类
 	}
 
 }
-/*public Thread(Runnable target, String name) {
-    init(null, target, name, 0);
-}*/
 
-/*@FunctionalInterface
-public interface Runnable {
-   
-    public abstract void run();
-}*/
 public class SaleTicket {
 	public static void main(String[] args) {
 		
 		Ticket ticket = new Ticket();
 		
-		
-	/*	new Thread(() ->{for(int i = 1; i<=40;i++)ticket.sale();}, "A").start();
-		
-		new Thread(() ->{for(int i = 1; i<=40;i++)ticket.sale();}, "B").start();
-		
-		new Thread(() ->{for(int i = 1; i<=40;i++)ticket.sale();}, "C").start();
-		*/
+		ExecutorService executor = new ThreadPoolExecutor(2,
+				5, 2L,TimeUnit.SECONDS,new ArrayBlockingQueue<>(3) , Executors.defaultThreadFactory(), new ThreadPoolExecutor.CallerRunsPolicy());
 	
-		ExecutorService executor=Executors.newFixedThreadPool(3);
+	
+		//ExecutorService executor=Executors.newFixedThreadPool(3);
 		for (int i = 1; i <=30; i++) {
-			executor.execute(() -> {ticket.sale();});
+			executor.submit(new FutureTask<String>(() ->{
+				ticket.sale();
+			//	System.err.println(Thread.activeCount());
+				return "";
+			}));
 		}
 		executor.shutdown();
 	}
